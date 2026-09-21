@@ -1,62 +1,23 @@
+import json
 from pathlib import Path
 
 
-def classify(message):
-    text = message.lower()
-
-    if "очередь" in text or "холодная" in text:
-        return (
-            "жалоба",
-            "Сожалеем о неудобствах в столовой. "
-            "Уточните, пожалуйста, дату и время посещения."
-        )
-
-    if "wi-fi" in text or "wi‑fi" in text:
-        return (
-            "жалоба",
-            "Уточните, пожалуйста, этаж и аудиторию в корпусе B, "
-            "где не работает Wi-Fi."
-        )
-
-    if "справк" in text:
-        return (
-            "справка",
-            "Для уточнения порядка получения справки о месте учёбы "
-            "обратитесь в учебную часть."
-        )
-
-    if "парковк" in text:
-        return (
-            "справка",
-            "Уточните, пожалуйста, адрес корпуса, чтобы можно было "
-            "подсказать расположение гостевой парковки."
-        )
-
-    if "консультац" in text:
-        return (
-            "другое",
-            "Уточните, пожалуйста, к какому специалисту вы хотите "
-            "записаться и какое время завтра вам удобно."
-        )
-
-    return (
-        "другое",
-        "Уточните, пожалуйста, детали вашего обращения."
-    )
-
-
 def main():
-    path = Path(__file__).with_name("messages.txt")
-    lines = path.read_text(encoding="utf-8").splitlines()
-    messages = [line.strip() for line in lines if line.strip()]
+    # Читаем события из файла рядом со скриптом.
+    path = Path(__file__).with_name("events.json")
+    events = json.loads(path.read_text(encoding="utf-8"))
 
-    for number, message in enumerate(messages, start=1):
-        category, reply = classify(message)
+    # «Тихий пульт»: пропускаем только критичные события.
+    critical_events = [
+        event for event in events
+        if event["level"] == "critical"
+    ]
 
-        print(f"{number}. {message}")
-        print(f"Категория: {category}")
-        print(f"Черновик ответа: {reply}")
-        print()
+    # Показываем события, которые требуют внимания.
+    for event in critical_events:
+        print(f'{event["message"]} (critical)')
+
+    print(f"критичных {len(critical_events)}")
 
 
 if __name__ == "__main__":
